@@ -14,8 +14,7 @@ import numpy as np
 pd.set_option("display.max_rows", None)
  
 from datetime import datetime
-from impala.dbapi import connect     
-from sklearn.linear_model import LinearRegression
+from impala.dbapi import connect      
 from sklearn.preprocessing import MinMaxScaler
   
 # configure and queries
@@ -23,7 +22,7 @@ IMPALA_HOST = '10.168.49.12'
 IMPALA_PORT = 21050
 
 class Dataset:
-    def __init__(self, window_size, query=None, qh_grouping=None, save_data=True):
+    def __init__(self, window_size, query=None, qh_grouping=None, save_data=False):
         # initialize connection
         conn = connect(host=IMPALA_HOST, port=IMPALA_PORT)
         cursor = conn.cursor()    
@@ -43,7 +42,7 @@ class Dataset:
         poly = np.poly1d(np.polyfit(np.arange(0, len(self.data), 1), self.data['success_rate'].to_numpy(), 4))
         pred = poly(np.arange(0, len(self.data), 1))
 
-        self.data['euclidean'] = (self.data['success_rate'].values - pred) ** 2 
+        self.data['euclidean'] = abs((self.data['success_rate'].values - pred) ** 2)
         
         # fill null value and scaling
         scaler = MinMaxScaler()
@@ -61,13 +60,11 @@ class Dataset:
         
         if save_data:
             self.data.to_csv(r'C:\Users\cj_khoh\Documents\UnifiedComms\Scripts\Python\time series - anomalies detection\input\from_sql_{}.csv'.format(datetime.now().strftime("%Y%m%d_%H%M%S")))
-                
-        # convert to dataframe format and preprocessing
-        self.window_size = window_size 
-        self.x, self.y = [], []
-
-        self.custom_xy(to_diff=False, ML='None')
-
+                 
+     
+    def get_data(self):
+        return self.data
+     
 
     def __len__(self):
         return len(self.data)
@@ -75,29 +72,3 @@ class Dataset:
     
     def __getitem__(self, idx):
         return self.data.iloc[idx, :]
-    
-    
-    # function to preprocess data / create x, y for training loop
-    def custom_xy(self, to_diff=False, ML=None):
-        temp = self.data
-
-        if ML != None:
-            lr = LinearRegression()
-            lr.fit(np.arange(0, len(temp), 1).reshape(-1, 1), self.data.to_numpy())
-
-        if to_diff:
-            temp = temp.diff()[1:]
- 
-        for i in range(len(temp) - self.window_size):  
-            self.x.append(np.array(temp.iloc[i:i+self.window_size]))
-
-            if ML == 'linear':
-                target = np.array(lr.intercept_ + (lr.coef_ * (self.window_size + i)))
-                self.y.append(target)
-            else:
-                self.y.append(np.array(temp.iloc[i+self.window_size]))  
-
-
-    def get_data(self):
-        return self.data
-     

@@ -47,8 +47,8 @@ class Labelling_Model:
         
   
 class ML_Model:  
-    def dbscan(self, data, lag=None, pca=False):
-        std = data['success_rate'].std()
+    def dbscan(self, data, target_column, lag=None, pca=False):
+        std = data[target_column].std()
         
         model = DBSCAN(eps=std)
         label = None
@@ -58,7 +58,7 @@ class ML_Model:
         else:
             data = pd.DataFrame(data)
 
-            lag_columns = pd.concat([data['success_rate'].diff(i).rename(f'lag{i+1}') for i in range(1, lag+1)], axis=1)
+            lag_columns = pd.concat([data[target_column].diff(i).rename(f'lag{i+1}') for i in range(1, lag+1)], axis=1)
             data = pd.concat([data, lag_columns], axis=1)
                 
             data.dropna(inplace=True)

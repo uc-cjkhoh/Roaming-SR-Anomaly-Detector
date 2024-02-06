@@ -4,8 +4,7 @@ Created on Fri Jan 19 15:38:15 2024
 
 @author: cj_khoh
 """
-  
-from collections import Counter
+   
 from sklearn.decomposition import PCA  
 import plotly.express as px
 import pandas as pd
@@ -49,17 +48,17 @@ def plot_euclidean_distance(data, y):
     pred = poly(np.arange(0, len(data), 1))  
     
     x = data.index
-    y = (data['success_rate'].values - pred) 
+    y = abs((data['success_rate'].values - pred) ** 2) 
     
     x = np.repeat(x,3)
     y = np.repeat(y,3)
     y[::3] = y[2::3] = 0
-
-    fig = px.line(x=x, y=y)
+ 
+    fig = px.line(x=x, y=y) 
     fig.show()
 
  
-def plot_chart(x, y, label=None):
+def plot_chart(df, x, y, label=None):
     """
     Plot labelling result on actual data
 
@@ -68,19 +67,19 @@ def plot_chart(x, y, label=None):
         y (String): Target Column
         label (narray): Unsupervised labelling result 
     """
-    poly = np.poly1d(np.polyfit(np.arange(0, len(x), 1), x[y].to_numpy(), 3))
+    poly = np.poly1d(np.polyfit(np.arange(0, len(df), 1), df[y].to_numpy(), 3))
 
-    fig = px.line(x=x.index, y=x[y]).update_layout(xaxis_title='Datatime', yaxis_title='Success Rate') 
-    fig.add_scatter(x=x.index, y=poly(np.arange(0, len(x), 1)), name='Polynomial Best Fit')
+    fig = px.line(x=df.index, y=df[y]).update_layout(xaxis_title=x, yaxis_title=y) 
+    fig.add_scatter(x=df.index, y=poly(np.arange(0, len(df), 1)), name='Polynomial Best Fit')
 
     if label is not None and label.any():  
-        fig.add_scatter(x=x[label == -1].index, y=x[label == -1][y], mode='markers', name='Outliers')
+        fig.add_scatter(x=df[label == -1].index, y=df[label == -1][y], mode='markers', name='Outliers')
      
     fig.update_traces(hovertemplate=None)
     fig.update_layout(hovermode='x unified')
     fig.show() 
     
- 
+
 def plot_3d(df): 
     label, _ = model.ML_Model().dbscan(df, pca=True)
     

@@ -11,6 +11,8 @@ import util
 import model
 import dataset 
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':   
    QUERY = ''
@@ -35,11 +37,14 @@ if __name__ == '__main__':
    
    _data = [data[['success_rate']], temp[['success_rate']]]
 
+   # for point anomalies 
    for i, d in enumerate(_data):
-      data_label, data_common_label = model.ML_Model().dbscan(d, pca=True)
-      util.plot_chart(x = d, y='success_rate', label = np.where(data_label == data_common_label, 1, -1))  
-      # util.plot_3d(d.copy())
+      data_label, data_common_label = model.ML_Model().dbscan(d, target_column='success_rate', pca=True)
+      util.plot_chart(df=d, x='Datetime', y='success_rate', label = np.where(data_label == data_common_label, 1, -1))  
 
       print('Dataset {}'.format(i+1))
       util.summary(np.where(data_label == data_common_label, 1, -1))
       util.plot_euclidean_distance(d, 'success_rate')
+   
+   # for contextual anomalies 
+   
