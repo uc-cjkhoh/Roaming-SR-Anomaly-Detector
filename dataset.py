@@ -38,11 +38,6 @@ class Dataset:
         self.data['weekly_diff'] = self.data['success_rate'].diff(window_size)
         self.data['weekly_diff'] = self.data['weekly_diff'].fillna(self.data['weekly_diff'])
         self.data['daily_diff'] = self.data['success_rate'].diff(1) 
-
-        poly = np.poly1d(np.polyfit(np.arange(0, len(self.data), 1), self.data['success_rate'].to_numpy(), 4))
-        pred = poly(np.arange(0, len(self.data), 1))
-
-        self.data['euclidean'] = abs((self.data['success_rate'].values - pred) ** 2)
         
         # fill null value and scaling
         scaler = MinMaxScaler()

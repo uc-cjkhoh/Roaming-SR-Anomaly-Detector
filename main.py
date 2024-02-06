@@ -22,7 +22,6 @@ if __name__ == '__main__':
       QUERY = file.readlines()[0]
 
    # configuration
-   
    window_size_per_day = 24
    data = dataset.Dataset(
       window_size=window_size_per_day * 7, 
@@ -37,14 +36,28 @@ if __name__ == '__main__':
    
    _data = [data[['success_rate']], temp[['success_rate']]]
 
-   # for point anomalies 
+   # for collective anomalies 
+   collective_labels = [None, None]   
    for i, d in enumerate(_data):
       data_label, data_common_label = model.ML_Model().dbscan(d, target_column='success_rate', pca=True)
-      util.plot_chart(df=d, x='Datetime', y='success_rate', label = np.where(data_label == data_common_label, 1, -1))  
+      label = np.where(data_label == data_common_label, 1, -1)
+      collective_labels[i] = label
 
-      print('Dataset {}'.format(i+1))
-      util.summary(np.where(data_label == data_common_label, 1, -1))
-      util.plot_euclidean_distance(d, 'success_rate')
+      # util.plot_chart(df=d, x='Datetime', y='success_rate', label = label)  
    
-   # for contextual anomalies 
-   
+   # for contextual anomalies
+   contextual_labels = [None, None]   
+   for i, d in enumerate(_data):
+      poly = np.poly1d(np.polyfit(np.arange(0, len(d), 1), d['success_rate'].to_numpy(), 4))
+      pred = poly(np.arange(0, len(d), 1))
+
+      d = d.copy()
+      d.loc[:, 'euclidean'] = (d['success_rate'].values - pred) ** 2
+      label = np.where(d['euclidean'] < np.percentile(d['euclidean'], 95), 1, -1)
+      contextual_labels[i] = label
+
+      # util.plot_chart(df=d, x='Datetime', y='success_rate', label = label)
+
+   # complete graph
+   for i, d in enumerate(_data):
+      util.plot_chart(d, x='Datetime', y='success_rate', label = np.where((collective_labels[i] == -1) | (contextual_labels[i] == -1), -1, 1))
