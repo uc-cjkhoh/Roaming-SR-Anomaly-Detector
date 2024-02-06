@@ -82,10 +82,10 @@ def plot_chart(x, y, label=None):
     
  
 def plot_3d(df): 
-    label, _ = model.ML_Model().dbscan(df, pca=False)
+    label, _ = model.ML_Model().dbscan(df, pca=True)
     
     df['label'] = label.reshape(-1, 1)
-    fig = px.scatter_3d(df, x='success_rate', y='weekly_diff', z='daily_diff', color='label')
+    fig = px.scatter_3d(df, x='success_rate', y='euclidean', z='daily_diff', color='label')
     fig.show() 
 
 

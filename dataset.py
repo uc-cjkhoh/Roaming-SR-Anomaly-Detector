@@ -39,8 +39,12 @@ class Dataset:
         self.data['weekly_diff'] = self.data['success_rate'].diff(window_size)
         self.data['weekly_diff'] = self.data['weekly_diff'].fillna(self.data['weekly_diff'])
         self.data['daily_diff'] = self.data['success_rate'].diff(1) 
-        # self.data['is_outlier_by_diff'] = model.Labelling_Model().percent_diff(self.data, 'success_rate')
 
+        poly = np.poly1d(np.polyfit(np.arange(0, len(self.data), 1), self.data['success_rate'].to_numpy(), 4))
+        pred = poly(np.arange(0, len(self.data), 1))
+
+        self.data['euclidean'] = (self.data['success_rate'].values - pred) ** 2 
+        
         # fill null value and scaling
         scaler = MinMaxScaler()
         for column in self.data.columns:
@@ -49,10 +53,8 @@ class Dataset:
 
         # generate day, hour column
         # self.data['dayofweek'] = self.data.index.to_series().dt.dayofweek
-        # self.data['hour'] = self.data.index.to_series().dt.hour
- 
-        # self.data['count'] = (self.data['count'] - self.data['count'].mean()) / (self.data['count'].max() - self.data['count'].min()) 
-
+        # self.data['hour'] = self.data.index.to_series().dt.hour 
+       
         if qh_grouping != None:
             self.data['success_rate'] = self.data['success_rate'].rolling(qh_grouping).mean()
             self.data.dropna(inplace=True)

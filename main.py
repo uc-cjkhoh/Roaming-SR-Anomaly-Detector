@@ -9,12 +9,8 @@ sys.path.append(r'C:\Users\cj_khoh\Documents\UnifiedComms\Scripts\Python\time se
 
 import util
 import model
-import pandas as pd
 import dataset 
 import numpy as np
-import plotly.express as px
-
-from collections import Counter
 
 if __name__ == '__main__':   
    QUERY = ''
@@ -37,16 +33,13 @@ if __name__ == '__main__':
    temp['weekly_diff'] = temp['weekly_diff'].fillna(temp['weekly_diff'].median())
    temp.fillna(0, inplace=True)
    
-   _data = [data, temp]
+   _data = [data[['success_rate']], temp[['success_rate']]]
 
-   """
    for i, d in enumerate(_data):
-      data_label, data_common_label = model.ML_Model().dbscan(d)
+      data_label, data_common_label = model.ML_Model().dbscan(d, pca=True)
       util.plot_chart(x = d, y='success_rate', label = np.where(data_label == data_common_label, 1, -1))  
-      util.plot_3d(d.copy())
+      # util.plot_3d(d.copy())
 
       print('Dataset {}'.format(i+1))
       util.summary(np.where(data_label == data_common_label, 1, -1))
-   """
-      
-   util.plot_euclidean_distance(temp, 'success_rate')
+      util.plot_euclidean_distance(d, 'success_rate')

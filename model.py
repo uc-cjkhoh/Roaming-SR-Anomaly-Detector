@@ -48,7 +48,9 @@ class Labelling_Model:
   
 class ML_Model:  
     def dbscan(self, data, lag=None, pca=False):
-        model = DBSCAN()
+        std = data['success_rate'].std()
+        
+        model = DBSCAN(eps=std)
         label = None
 
         if lag == None:
