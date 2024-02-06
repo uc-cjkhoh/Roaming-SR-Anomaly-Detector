@@ -1,0 +1,100 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jan 19 15:38:15 2024
+
+@author: cj_khoh
+"""
+  
+from collections import Counter
+from sklearn.decomposition import PCA  
+import plotly.express as px
+import pandas as pd
+import numpy as np 
+import model
+ 
+
+def reindex(data, freq=None):
+    if freq == None:
+        raise ValueError('Missing Frequency Argument')
+
+    ori_column = data.columns
+
+    idx = pd.date_range(
+        start=data.index[0], 
+        end=data.index[-1],
+        freq=freq
+    )
+
+    return data.reindex(idx, fill_value=None, columns=['dt'].append(ori_column))
+
+
+def filter_unwanted_value(data, threshold=None):
+    if threshold is not None:
+        data[data['success_rate'] < threshold] = None
+    
+    data['success_rate'] = data['success_rate'].interpolate(option='spline')
+
+    return data
+
+
+def dimension_reduction(data):
+    pca = PCA(n_components=1)
+    result = pca.fit_transform(data)
+
+    return result
+
+
+def plot_euclidean_distance(data, y):
+    poly = np.poly1d(np.polyfit(np.arange(0, len(data), 1), data[y].to_numpy(), 4))
+    pred = poly(np.arange(0, len(data), 1))  
+    
+    x = data.index
+    y = (data['success_rate'].values - pred) 
+    
+    x = np.repeat(x,3)
+    y = np.repeat(y,3)
+    y[::3] = y[2::3] = 0
+
+    fig = px.line(x=x, y=y)
+    fig.show()
+
+ 
+def plot_chart(x, y, label=None):
+    """
+    Plot labelling result on actual data
+
+    Args:
+        x (DataFrame): Preprocessed Dataset 
+        y (String): Target Column
+        label (narray): Unsupervised labelling result 
+    """
+    poly = np.poly1d(np.polyfit(np.arange(0, len(x), 1), x[y].to_numpy(), 3))
+
+    fig = px.line(x=x.index, y=x[y]).update_layout(xaxis_title='Datatime', yaxis_title='Success Rate') 
+    fig.add_scatter(x=x.index, y=poly(np.arange(0, len(x), 1)), name='Polynomial Best Fit')
+
+    if label is not None and label.any():  
+        fig.add_scatter(x=x[label == -1].index, y=x[label == -1][y], mode='markers', name='Outliers')
+     
+    fig.update_traces(hovertemplate=None)
+    fig.update_layout(hovermode='x unified')
+    fig.show() 
+    
+ 
+def plot_3d(df): 
+    label, _ = model.ML_Model().dbscan(df, pca=False)
+    
+    df['label'] = label.reshape(-1, 1)
+    fig = px.scatter_3d(df, x='success_rate', y='weekly_diff', z='daily_diff', color='label')
+    fig.show() 
+
+
+def summary(label):
+    """
+    Print a summary of this anomaly detection
+    1. Outlier Percentage 
+
+    Args:
+        label (List): Unsupervised labelling result 
+    """
+    print('Outlier Percentage: {}%\n'.format(round((len(label[label == -1]) / len(label)) * 100, 4)))
