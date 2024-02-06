@@ -1,0 +1,36 @@
+select
+    dt,
+    tx_status,
+    count(1) as count
+from
+    (
+        select
+            concat (
+                tx_date,
+                ' ',
+                right (concat ('0', cast(tx_hour as string)), 2),
+                ':',
+                right (concat ('0', cast(tx_qh as string)), 2),
+                ':00'
+            ) as dt,
+            if (mcc_ref_primary > 0, mcc_ref_primary, mcc_ref) as mcc,
+            IF (mnc_ref_primary != '', mnc_ref_primary, mnc_ref) AS mnc,
+            IF (
+                status_type = 12
+                and (`status` in ('1', '2', '3', '4', '5')),
+                'Success',
+                'Fail'
+            ) as tx_status
+        from
+            roam350_report_m1.data_em
+        where
+            (par_date between 20230401 and 20230521)
+            and op_code IN (2, 23, 316)
+            and par_bound_type = 2
+            and rat_type = 1004
+    ) tbl
+where
+    mcc = 502
+group by
+    dt,
+    tx_status
