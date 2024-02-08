@@ -3,21 +3,16 @@
 Created on Fri Jan 19 12:26:20 2024
 
 @author: cj_khoh
-""" 
-import sys
-sys.path.append(r'C:\Users\cj_khoh\Documents\UnifiedComms\Scripts\Python\time series - anomalies detection')
+"""  
 
 import util
 import model
 import dataset 
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
+import numpy as np 
 
 if __name__ == '__main__':   
-   QUERY = ''
-   # FILEPATH = r'C:\Users\cj_khoh\Documents\UnifiedComms\Scripts\Python\time series - anomalies detection\April_to_May.csv'
-
+   QUERY = '' 
+   
    with open(r'succ_rate.txt') as file:
       QUERY = file.readlines()[0]
 

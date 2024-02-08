@@ -5,13 +5,8 @@ Created on Fri Jan 19 12:26:20 2024
 @author: cj_khoh
 """
 
-import sys
-sys.path.append(r'C:\Users\cj_khoh\Documents\UnifiedComms\Scripts\Python\time series - anomalies detection')
- 
 import util 
-import pandas as pd
-import numpy as np  
-pd.set_option("display.max_rows", None)
+import pandas as pd  
  
 from datetime import datetime
 from impala.dbapi import connect      
@@ -45,10 +40,6 @@ class Dataset:
             self.data[column].fillna(self.data[column].median(), inplace=True)
             self.data[column] = scaler.fit_transform(self.data[column].values.reshape(-1, 1))
 
-        # generate day, hour column
-        # self.data['dayofweek'] = self.data.index.to_series().dt.dayofweek
-        # self.data['hour'] = self.data.index.to_series().dt.hour 
-       
         if qh_grouping != None:
             self.data['success_rate'] = self.data['success_rate'].rolling(qh_grouping).mean()
             self.data.dropna(inplace=True)
@@ -59,11 +50,4 @@ class Dataset:
      
     def get_data(self):
         return self.data
-     
-
-    def __len__(self):
-        return len(self.data)
     
-    
-    def __getitem__(self, idx):
-        return self.data.iloc[idx, :]
