@@ -7,6 +7,7 @@ Created on Fri Jan 19 15:38:15 2024
    
 from sklearn.decomposition import PCA  
 import plotly.express as px
+import plotly.graph_objects as go
 import pandas as pd
 import numpy as np 
 import model
@@ -28,7 +29,7 @@ def reindex(data, freq=None):
 
 
 def filter_unwanted_value(data, threshold=None):
-    if threshold is not None:
+    if threshold:
         data[data['success_rate'] < threshold] = None
     
     data['success_rate'] = data['success_rate'].interpolate(option='spline')
@@ -44,7 +45,7 @@ def dimension_reduction(data):
 
 
 def plot_euclidean_distance(data, y):
-    poly = np.poly1d(np.polyfit(np.arange(0, len(data), 1), data[y].to_numpy(), 4))
+    poly = np.poly1d(np.polyfit(np.arange(0, len(data), 1), data[y].to_numpy(), 3))
     pred = poly(np.arange(0, len(data), 1))  
     
     x = data.index
@@ -67,26 +68,18 @@ def plot_chart(df, x, y, label=None):
         y (String): Target Column
         label (narray): Unsupervised labelling result 
     """
-    poly = np.poly1d(np.polyfit(np.arange(0, len(df), 1), df[y].to_numpy(), 3))
+    poly = np.poly1d(np.polyfit(np.arange(0, len(df), 1), df[y].to_numpy(), 4))
 
     fig = px.line(x=df.index, y=df[y]).update_layout(xaxis_title=x, yaxis_title=y) 
-    fig.add_scatter(x=df.index, y=poly(np.arange(0, len(df), 1)), name='Polynomial Best Fit')
+    fig.add_trace(go.Scatter(x=df.index, y=poly(np.arange(0, len(df), 1)), name='Polynomial Best Fit', mode='lines', marker_color='black'))
 
     if label is not None and label.any():  
-        fig.add_scatter(x=df[label == -1].index, y=df[label == -1][y], mode='markers', name='Outliers')
+        fig.add_trace(go.Scatter(x=df[label == -1].index, y=df[label == -1][y], mode='markers', marker_color='red', name='Outliers'))
      
     fig.update_traces(hovertemplate=None)
     fig.update_layout(hovermode='x unified')
     fig.show() 
     
-
-def plot_3d(df): 
-    label, _ = model.ML_Model().dbscan(df, pca=True)
-    
-    df['label'] = label.reshape(-1, 1)
-    fig = px.scatter_3d(df, x='success_rate', y='euclidean', z='daily_diff', color='label')
-    fig.show() 
-
 
 def summary(label):
     """

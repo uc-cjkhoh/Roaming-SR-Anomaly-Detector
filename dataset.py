@@ -9,7 +9,7 @@ import util
 import pandas as pd  
  
 from datetime import datetime
-from impala.dbapi import connect      
+from impala.dbapi import connect
 from sklearn.preprocessing import MinMaxScaler
   
 # configure and queries

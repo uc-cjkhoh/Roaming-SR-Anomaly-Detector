@@ -12,7 +12,8 @@ import numpy as np
 
 if __name__ == '__main__':   
    QUERY = '' 
-   
+
+   # read sql query from .txt
    with open(r'succ_rate.txt') as file:
       QUERY = file.readlines()[0]
 
