@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 19 12:26:20 2024
-
+Created on Fri Jan 19 12:26:20 2024 
 @author: cj_khoh
 """
 
@@ -18,6 +17,15 @@ IMPALA_PORT = 21050
 
 class Dataset:
     def __init__(self, window_size, query=None, qh_grouping=None, save_data=False):
+        """_summary_
+
+        Args:
+            window_size (Integer): Select N data point as one subset
+            query (String, optional): Complete query to execute
+            qh_grouping (Integer, optional): Moving Average Range
+            save_data (Boolean, optional): Save data to current filepath
+        """
+        
         # initialize connection
         conn = connect(host=IMPALA_HOST, port=IMPALA_PORT)
         cursor = conn.cursor()    
@@ -45,9 +53,10 @@ class Dataset:
             self.data.dropna(inplace=True)
         
         if save_data:
-            self.data.to_csv(r'C:\Users\cj_khoh\Documents\UnifiedComms\Scripts\Python\time series - anomalies detection\input\from_sql_{}.csv'.format(datetime.now().strftime("%Y%m%d_%H%M%S")))
+            self.data.to_csv(r'from_sql_{}.csv'.format(datetime.now().strftime("%Y%m%d_%H%M%S")))
                  
      
+    # return dataset
     def get_data(self):
         return self.data
     

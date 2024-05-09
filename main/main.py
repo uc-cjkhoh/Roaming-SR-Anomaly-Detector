@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 19 12:26:20 2024
-
+Created on Fri Jan 19 12:26:20 2024 
 @author: cj_khoh
 """  
 
@@ -9,23 +8,37 @@ import util
 import model
 import dataset 
 import numpy as np 
+import argparse
+
+# receive argument from cmd
+parser = argparse.ArgumentParser()
+parser.add_argument('--sql_filepath')
+args = parser.parse_args()
+
+# if argument not defined, throw error
+if args.sql_filepath is None:
+   raise ValueError('Argument "--sql_filepath" is not defined')
 
 if __name__ == '__main__':   
    QUERY = '' 
-
+   
    # read sql query from .txt
-   with open(r'succ_rate.txt') as file:
+   with open(args.sql_filepath) as file:
       QUERY = file.readlines()[0]
 
    # configuration
    window_size_per_day = 24
    data = dataset.Dataset(
-      window_size=window_size_per_day * 7, 
+      window_size=window_size_per_day, 
       query=QUERY, 
       qh_grouping=None
    ).get_data() 
  
+   # first line: to filter out a certain period where success rate = 0
+   # threshold: filter value under threshold's value (need to modify for automation)
    temp = util.filter_unwanted_value(data.copy(), threshold=0.3)
+   
+   # fill missing data / inconsistent data
    temp['success_rate'] = temp['success_rate'].interpolate(option='spline') 
    temp['weekly_diff'] = temp['weekly_diff'].fillna(temp['weekly_diff'].median())
    temp.fillna(0, inplace=True)

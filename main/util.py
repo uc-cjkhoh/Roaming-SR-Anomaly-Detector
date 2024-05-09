@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 19 15:38:15 2024
-
+Created on Fri Jan 19 15:38:15 2024 
 @author: cj_khoh
 """
    
@@ -10,10 +9,22 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np 
-import model
  
 
 def reindex(data, freq=None):
+    """Reindex dataset with ordered datetime
+
+    Args:
+        data (DataFrame): Actual dataset
+        freq (String, optional): Fixed frequency DatatimeIndex, eg: 'D' for Days
+
+    Raises:
+        ValueError: Raise error if `freq` argument is None
+
+    Returns:
+        DataFrame: Re-index dataset with ordered datetime
+    """
+    
     if freq == None:
         raise ValueError('Missing Frequency Argument')
 
@@ -29,36 +40,23 @@ def reindex(data, freq=None):
 
 
 def filter_unwanted_value(data, threshold=None):
+    """Remove any data of specific column that below threshold value
+
+    Args:
+        data (DataFrame): Actual dataset
+        threshold (float, optional): remove data under threshold value
+
+    Returns:
+        DataFrame: filtered dataset
+    """
     if threshold:
         data[data['success_rate'] < threshold] = None
     
     data['success_rate'] = data['success_rate'].interpolate(option='spline')
 
     return data
-
-
-def dimension_reduction(data):
-    pca = PCA(n_components=1)
-    result = pca.fit_transform(data)
-
-    return result
-
-
-def plot_euclidean_distance(data, y):
-    poly = np.poly1d(np.polyfit(np.arange(0, len(data), 1), data[y].to_numpy(), 3))
-    pred = poly(np.arange(0, len(data), 1))  
-    
-    x = data.index
-    y = abs((data['success_rate'].values - pred) ** 2) 
-    
-    x = np.repeat(x,3)
-    y = np.repeat(y,3)
-    y[::3] = y[2::3] = 0
- 
-    fig = px.line(x=x, y=y) 
-    fig.show()
-
- 
+  
+  
 def plot_chart(df, x, y, label=None):
     """
     Plot labelling result on actual data
